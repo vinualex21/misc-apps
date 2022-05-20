@@ -8,48 +8,54 @@ namespace TeamSplit
 {
     public class SplitTeam
     {
-        public void ShuffleSplitTeams(string[] players, int teamSize)
+        public void ShuffleSplitTeams(string[] members, int teamSize)
         {
-            foreach (var player in players)
-                Console.Write($"{player} ");
-
-            Random random = new Random();
-            players = players.OrderBy(shuffle => random.Next()).ToArray();
+            Random random = new();
+            members = members.OrderBy(shuffle => random.Next()).ToArray();
             Console.WriteLine("\n\nTeams\n");
 
             int i = 0, j = 0;
-            int extraMembers = 0;
-            while (i < players.Length)
+            int remainingExtraMembers = 0;
+            int numberOfPerfectTeams = members.Length / teamSize;
+            int extraMembers = members.Length % teamSize;
+
+            //split equally
+            if(extraMembers == 0)
             {
-                //Cannot be divided equally
-                extraMembers = (players.Length - i) % teamSize;
-                if (extraMembers != 0)
+                while (i < members.Length)
                 {
-                    //Last team
-                    if ((players.Length - i) / teamSize == 0)
-                    {
-                        DisplayTeams(players[i..], i / teamSize + 1);
-                        break;
-                    }
-                    //extra members are small compared to team size, distribute them among other teams
-                    else if (extraMembers < teamSize / 2)
-                    {
-                        DisplayTeams(players[i..(i + teamSize + 1)], i / teamSize + 1);
-                        i += teamSize + 1;
-                    }
-                    //extra members are more than half of team size, let them remain as a team
-                    else
-                    {
-                        DisplayTeams(players[i..(i + teamSize)], i / teamSize + 1);
-                        i += teamSize;
-                    }
-                }
-                else
-                {
-                    DisplayTeams(players[i..(i + teamSize)], i / teamSize + 1);
+                    DisplayTeams(members[i..(i + teamSize)], i / teamSize + 1);
                     i += teamSize;
                 }
             }
+            //Cannot be split equally
+            else
+            {
+                while (i < members.Length)
+                {
+                    remainingExtraMembers = (members.Length - i) % teamSize;
+                    //Last team
+                    if ((members.Length - i) / teamSize == 0)
+                    {
+                        DisplayTeams(members[i..], i / teamSize + 1);
+                        break;
+                    }
+                    //few extra members and space in other teams, distribute them
+                    else if (remainingExtraMembers <= teamSize / 2 && numberOfPerfectTeams > extraMembers)
+                    {
+                        DisplayTeams(members[i..(i + teamSize + 1)], i / teamSize + 1);
+                        i += teamSize + 1;
+                    }
+                    //too many extra members or not enough teams to distribute, remain as is
+                    else
+                    {
+                        DisplayTeams(members[i..(i + teamSize)], i / teamSize + 1);
+                        i += teamSize;
+                    }
+                }
+            }
+
+            
         }
         
         private void DisplayTeams(string[] team, int teamNumber)
